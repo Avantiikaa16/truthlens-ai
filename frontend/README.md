@@ -81,7 +81,7 @@ truthlens-ai/
 ### 1. Clone
 
 ```bash
-git clone https://github.com/<username>/truthlens-ai.git
+git clone https://github.com/Avantiikaa16/truthlens-ai.git
 cd truthlens-ai
 ```
 
