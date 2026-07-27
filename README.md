@@ -2,21 +2,26 @@
 
 > Investigate claims. Verify facts. Understand the evidence.
 
-TruthLens AI is an AI-powered fact investigation platform that goes beyond simple search by verifying factual claims using live web research, official sources, explainable confidence scoring, and evidence visualization.
+TruthLens AI is a full-stack fact investigation platform that goes beyond simple search by verifying factual claims using live web research, official-source detection, explainable confidence scoring, and source-independence analysis. It works on any claim regardless of domain — health, agriculture, tech, politics, finance, sports, and more.
 
-Built for the **You.com Agentic AI Hackathon 2026**.
+**Live**: [avantika-truthlens-ai.vercel.app](https://avantika-truthlens-ai.vercel.app)
+
+Originally built for the **You.com Agentic AI Hackathon 2026**, since extended into a persisted, authenticated, production-deployed application.
 
 ---
 
 ## ✨ Features
 
-- 🔎 Verify factual claims using live web research
-- 📊 Explainable confidence scoring
-- 🌳 Claim Tree showing supporting and conflicting evidence
-- 🏛 Official source detection
+- 🔎 Verify factual claims using live web research (You.com Research API)
+- 📊 Explainable confidence scoring with itemized factors
+- 🔗 Independent Confirmation Score — classifies cited sources as independent primary reporting vs. ones just citing another source, and scores how many independent sources actually back the verdict
+- 🌳 Claim Tree showing supporting, conflicting, and official evidence
 - 📰 Story evolution timeline
-- ⚡ Multiple verdict categories
-- 🎯 Exact claim verification to reduce misinformation
+- ⚡ Eight verdict categories (see below) instead of a binary true/false
+- 🎯 Exact-claim verification (subject/action/object/direction/date) to avoid confirming a similar-but-different event
+- 👤 Accounts with JWT auth — investigating stays fully anonymous by default; logging in additionally saves a personal history
+- 🔗 Every investigation gets a shareable, permanent link, regardless of login state
+- ⏱ Auto-logout after 30 minutes of inactivity (persisted across refreshes)
 
 ---
 
@@ -37,20 +42,24 @@ Built for the **You.com Agentic AI Hackathon 2026**.
 
 ### Frontend
 
-- React
-- TypeScript
+- React 19 + TypeScript
 - Vite
-- CSS
+- React Router (client-side routing for `/`, `/login`, `/signup`, `/history`, `/share/:id`)
+- Plain CSS
 
 ### Backend
 
-- FastAPI
-- Python
-- HTTPX
+- FastAPI + Python
+- SQLAlchemy 2.0 (async engine) + Alembic migrations
+- PostgreSQL (hosted on [Neon](https://neon.tech))
+- JWT auth (PyJWT + bcrypt)
+- HTTPX (You.com Research API client)
 
-### AI
+### Infrastructure
 
-- You.com Research API
+- Frontend deployed on **Vercel**
+- Backend deployed on **Render**
+- Database on **Neon** (serverless Postgres)
 
 ---
 
@@ -60,16 +69,27 @@ Built for the **You.com Agentic AI Hackathon 2026**.
 truthlens-ai/
 │
 ├── backend/
+│   ├── alembic/                 # DB migrations
 │   ├── app/
-│   ├── services/
-│   ├── routes/
-│   └── main.py
+│   │   ├── db/                  # SQLAlchemy models + async session
+│   │   ├── routers/             # auth, investigations, investigate endpoints
+│   │   ├── auth.py              # JWT issuing/verification
+│   │   ├── confidence.py        # Explainable confidence scoring
+│   │   ├── independence.py      # Independent Confirmation Score
+│   │   ├── models.py            # Pydantic request/response schemas
+│   │   ├── schemas_auth.py
+│   │   ├── you_client.py        # You.com Research API prompt + client
+│   │   └── main.py
+│   └── requirements.txt
 │
 ├── frontend/
 │   ├── src/
-│   ├── components/
-│   ├── assets/
-│   └── App.tsx
+│   │   ├── components/          # InvestigationResult, Navbar
+│   │   ├── context/              # AuthContext (JWT + idle logout)
+│   │   ├── pages/                # HomePage, LoginPage, SignupPage, HistoryPage, SharePage
+│   │   ├── api.ts
+│   │   └── types.ts
+│   └── package.json
 │
 └── README.md
 ```
@@ -103,13 +123,26 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Create `.env`
+Create `backend/.env` (see `backend/.env.example`):
 
 ```env
-YDC_API_KEY=YOUR_YOU_API_KEY
+YDC_API_KEY=your_you_dot_com_api_key
+
+# Postgres connection strings from your Neon project's Connection Details panel
+DATABASE_URL=postgresql://user:password@host-pooler.neon.tech/dbname?sslmode=require
+DATABASE_URL_UNPOOLED=postgresql://user:password@host.neon.tech/dbname?sslmode=require
+
+# Any long random string, used to sign JWTs
+JWT_SECRET=change_me_to_a_long_random_string
 ```
 
-Run
+Run the database migration once:
+
+```bash
+alembic upgrade head
+```
+
+Run the API:
 
 ```bash
 uvicorn app.main:app --reload --loop none
@@ -133,6 +166,12 @@ cd frontend
 npm install
 
 npm run dev
+```
+
+Optionally set `frontend/.env` (see `frontend/.env.example`) to point at a non-local backend:
+
+```env
+VITE_API_URL=http://localhost:8000
 ```
 
 Frontend runs on:
@@ -169,33 +208,39 @@ Apple will acquire Disney next month
 OpenAI is secretly building its own smartphone
 ```
 
+### Across other domains
+
+```
+The FDA approved a new mRNA vaccine for RSV in adults over 60
+The USDA declared a nationwide emergency over bird flu in egg-laying hens
+The Federal Reserve cut interest rates by 50 basis points in September 2024
+```
+
 ---
 
 ## 💡 How It Works
 
-1. User submits a factual claim.
-2. Backend sends the claim to the You.com Research API.
-3. Live web research is performed.
-4. Evidence is categorized into:
-   - Supporting
-   - Conflicting
-   - Official
+1. User submits a factual claim (optionally logged in).
+2. Backend sends the claim to the You.com Research API with a prompt that requires exact-claim verification (not a similar or reversed event).
+3. Live web research is performed, and evidence is categorized into supporting, conflicting, official, and timeline sections.
+4. Cited sources are classified as independent primary reporting vs. ones that just cite another already-listed source.
 5. TruthLens generates:
-   - Verdict
-   - Summary
-   - Timeline
-   - Explainable Confidence
+   - Verdict + summary
+   - Explainable confidence score
+   - Independent Confirmation Score
    - Claim Tree
+   - Story evolution timeline
+6. The result is persisted with a UUID and a permanent share link; if the user is logged in, it's also added to their history.
 
 ---
 
 ## 🌟 Future Improvements
 
-- Multi-language support
-- PDF evidence export
+- Automated test coverage (backend auth/persistence, frontend components)
+- PDF / image evidence export for sharing
 - Browser extension
-- Saved investigations
-- Collaboration & sharing
+- Multi-language support
+- Keep-alive ping to avoid Render free-tier cold starts
 - Real-time breaking news monitoring
 
 ---
@@ -204,4 +249,4 @@ OpenAI is secretly building its own smartphone
 
 Built by **Avantika Chapegadikar**
 
-For the **You.com Agentic AI Hackathon 2026**.
+Originally for the **You.com Agentic AI Hackathon 2026**.
