@@ -47,6 +47,7 @@ class ResearchSource(BaseModel):
     snippets: list[str] = []
 
 class InvestigationResponse(BaseModel):
+    id: str | None = None
     claim: str
     investigation: Investigation
     confidence: ConfidenceResult

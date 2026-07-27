@@ -35,10 +35,30 @@ export interface ResearchSource {
 }
 
 export interface InvestigationResponse {
+  id: string | null
   claim: string
   investigation: Investigation
   confidence: ConfidenceResult
   sources: ResearchSource[]
+}
+
+export interface InvestigationSummary {
+  id: string
+  claim: string
+  verdict: string
+  confidence_score: number
+  created_at: string
+}
+
+export interface User {
+  id: string
+  email: string
+  created_at: string
+}
+
+export interface AuthResponse {
+  access_token: string
+  token_type: string
 }
 
 export interface ConfidenceFactor {

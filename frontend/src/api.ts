@@ -1,6 +1,83 @@
-import type { InvestigationResponse } from './types'
+import type {
+  AuthResponse,
+  InvestigationResponse,
+  InvestigationSummary,
+  User,
+} from './types'
 
-const API_URL = 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+const TOKEN_KEY = 'truthlens_token'
+
+export function getToken(): string | null {
+  return window.localStorage.getItem(TOKEN_KEY)
+}
+
+export function setToken(token: string): void {
+  window.localStorage.setItem(TOKEN_KEY, token)
+}
+
+export function clearToken(): void {
+  window.localStorage.removeItem(TOKEN_KEY)
+}
+
+function authHeaders(): Record<string, string> {
+  const token = getToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+async function parseJsonOrThrow<T>(response: Response): Promise<T> {
+  if (!response.ok) {
+    const body: unknown = await response.json().catch(() => null)
+    const detail =
+      body && typeof body === 'object' && 'detail' in body ? body.detail : null
+    const message =
+      typeof detail === 'string' ? detail : `Request failed with status ${response.status}.`
+    throw new Error(message)
+  }
+
+  return response.json() as Promise<T>
+}
+
+export async function signup(email: string, password: string): Promise<AuthResponse> {
+  const response = await fetch(`${API_URL}/api/auth/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+
+  return parseJsonOrThrow<AuthResponse>(response)
+}
+
+export async function login(email: string, password: string): Promise<AuthResponse> {
+  const response = await fetch(`${API_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
+
+  return parseJsonOrThrow<AuthResponse>(response)
+}
+
+export async function getMe(): Promise<User> {
+  const response = await fetch(`${API_URL}/api/auth/me`, {
+    headers: authHeaders(),
+  })
+
+  return parseJsonOrThrow<User>(response)
+}
+
+export async function getInvestigation(id: string): Promise<InvestigationResponse> {
+  const response = await fetch(`${API_URL}/api/investigations/${id}`)
+  return parseJsonOrThrow<InvestigationResponse>(response)
+}
+
+export async function listMyInvestigations(): Promise<InvestigationSummary[]> {
+  const response = await fetch(`${API_URL}/api/investigations/mine`, {
+    headers: authHeaders(),
+  })
+
+  return parseJsonOrThrow<InvestigationSummary[]>(response)
+}
 
 export interface InvestigationProgress {
   step: string
@@ -22,6 +99,7 @@ export async function investigateClaimStream(
     headers: {
       'Content-Type': 'application/json',
       Accept: 'text/event-stream',
+      ...authHeaders(),
     },
     body: JSON.stringify({
       claim,

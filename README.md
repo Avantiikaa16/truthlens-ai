@@ -112,8 +112,10 @@ YDC_API_KEY=YOUR_YOU_API_KEY
 Run
 
 ```bash
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --loop none
 ```
+
+> `--loop none` is required on Windows: uvicorn's default loop is `ProactorEventLoop`, which the async Postgres driver (`psycopg`) can't run under. This flag lets asyncio fall back to the policy set in `app/main.py`, which forces `SelectorEventLoop` instead.
 
 Backend runs on:
 
