@@ -34,11 +34,26 @@ export interface ResearchSource {
   snippets: string[]
 }
 
+export interface SourceRelationship {
+  url: string
+  source: string | null
+  is_independent: boolean
+  cites: string[]
+}
+
+export interface IndependentConfirmationResult {
+  score: number
+  independent_count: number
+  total_count: number
+  relationships: SourceRelationship[]
+}
+
 export interface InvestigationResponse {
   id: string | null
   claim: string
   investigation: Investigation
   confidence: ConfidenceResult
+  independent_confirmation: IndependentConfirmationResult
   sources: ResearchSource[]
 }
 

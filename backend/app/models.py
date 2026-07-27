@@ -33,6 +33,12 @@ class OfficialConfirmation(BaseModel):
     source: str | None = None
     url: str | None = None
 
+class SourceRelationship(BaseModel):
+    url: str
+    source: str | None = None
+    is_independent: bool = True
+    cites: list[str] = []
+
 class Investigation(BaseModel):
     verdict: str
     summary: str
@@ -40,17 +46,27 @@ class Investigation(BaseModel):
     contradicting_evidence: list[EvidenceItem] = []
     official_confirmation: OfficialConfirmation
     timeline: list[TimelineEvent] = []
+    source_relationships: list[SourceRelationship] = []
 
 class ResearchSource(BaseModel):
     title: str
     url: str
     snippets: list[str] = []
 
+class IndependentConfirmationResult(BaseModel):
+    score: int = 0
+    independent_count: int = 0
+    total_count: int = 0
+    relationships: list[SourceRelationship] = []
+
 class InvestigationResponse(BaseModel):
     id: str | None = None
     claim: str
     investigation: Investigation
     confidence: ConfidenceResult
+    independent_confirmation: IndependentConfirmationResult = Field(
+        default_factory=IndependentConfirmationResult
+    )
     sources: list[ResearchSource]
 
 class ConfidenceFactor(BaseModel):

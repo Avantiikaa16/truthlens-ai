@@ -108,6 +108,14 @@ Return ONLY valid JSON using this exact schema:
       "source": "",
       "url": ""
     }}
+  ],
+  "source_relationships": [
+    {{
+      "url": "",
+      "source": "",
+      "is_independent": true,
+      "cites": []
+    }}
   ]
 }}
 
@@ -230,7 +238,29 @@ Rules:
 21. Use "Confirmed" only when reliable evidence directly supports the exact
     subject-action-object relationship and all material qualifiers.
 
-22. Return only valid JSON.
+22. For source_relationships, list every unique source URL that appears
+    anywhere above (supporting_evidence, contradicting_evidence,
+    official_confirmation, or timeline) exactly once.
+
+23. A source is independent (is_independent: true) when it did its own
+    original reporting, holds a firsthand statement, or is a primary
+    document: a government filing, regulator statement, court document,
+    company press release, official company page, or a wire service
+    (e.g. Reuters, AP) doing its own reporting.
+
+24. A source is NOT independent (is_independent: false) when it merely
+    summarizes, quotes, or repeats another source that is also present
+    in source_relationships. In that case, list the URL(s) of the
+    source(s) it is citing in "cites".
+
+25. If you cannot tell whether a source is independent or derivative,
+    default is_independent to true rather than guessing it cites another
+    source you are not certain about.
+
+26. Never list a URL in "cites" that is not itself present as another
+    entry in source_relationships.
+
+27. Return only valid JSON.
 """
 
     headers = {

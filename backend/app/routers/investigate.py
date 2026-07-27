@@ -13,8 +13,10 @@ from app.auth import get_optional_user
 from app.confidence import calculate_confidence
 from app.db.models import Investigation, User
 from app.db.session import get_db
+from app.independence import calculate_independent_confirmation
 from app.models import (
     ConfidenceResult,
+    IndependentConfirmationResult,
     Investigation as InvestigationSchema,
     InvestigationRequest,
     InvestigationResponse,
@@ -136,10 +138,15 @@ async def _run_investigation(request: InvestigationRequest) -> InvestigationResp
 
     confidence = ConfidenceResult.model_validate(confidence_data)
 
+    independent_confirmation = IndependentConfirmationResult.model_validate(
+        calculate_independent_confirmation(investigation)
+    )
+
     return InvestigationResponse(
         claim=request.claim,
         investigation=investigation,
         confidence=confidence,
+        independent_confirmation=independent_confirmation,
         sources=sources,
     )
 
@@ -284,10 +291,15 @@ async def investigate_stream(
 
             confidence = ConfidenceResult.model_validate(confidence_data)
 
+            independent_confirmation = IndependentConfirmationResult.model_validate(
+                calculate_independent_confirmation(investigation)
+            )
+
             result = InvestigationResponse(
                 claim=request.claim,
                 investigation=investigation,
                 confidence=confidence,
+                independent_confirmation=independent_confirmation,
                 sources=sources,
             )
 

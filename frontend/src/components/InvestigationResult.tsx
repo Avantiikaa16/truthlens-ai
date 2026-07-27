@@ -5,11 +5,12 @@ import {
   ExternalLink,
   GitBranch,
   Link2,
+  Radar,
   ShieldCheck,
   XCircle,
 } from 'lucide-react'
 
-import type { InvestigationResponse } from '../types'
+import type { InvestigationResponse, SourceRelationship } from '../types'
 
 function getTrustLevel(score: number) {
   if (score >= 80) {
@@ -44,6 +45,22 @@ function getTrustLevel(score: number) {
     label: 'Very Low',
     className: 'very-low',
   }
+}
+
+function citedSourceNames(
+  relationship: SourceRelationship,
+  allRelationships: SourceRelationship[],
+): string {
+  if (relationship.cites.length === 0) {
+    return ''
+  }
+
+  return relationship.cites
+    .map((citedUrl) => {
+      const cited = allRelationships.find((item) => item.url === citedUrl)
+      return cited?.source ?? cited?.url ?? citedUrl
+    })
+    .join(', ')
 }
 
 interface InvestigationResultProps {
@@ -198,6 +215,80 @@ export function InvestigationResult({ result }: InvestigationResultProps) {
             ))}
           </ul>
         </div>
+      </section>
+
+      <section className="independence-card">
+        <div className="section-heading independence-heading">
+          <div className="section-heading-label">
+            <Radar size={23} />
+
+            <div>
+              <p className="eyebrow">Independent confirmation</p>
+              <h3>How many sources verified this independently</h3>
+            </div>
+          </div>
+
+          <div className="independence-score">
+            {result.independent_confirmation.score}%
+          </div>
+        </div>
+
+        {result.independent_confirmation.total_count === 0 ? (
+          <p className="empty-state">
+            No classifiable sources were returned for this investigation.
+          </p>
+        ) : (
+          <>
+            <p className="independence-summary">
+              <strong>{result.independent_confirmation.independent_count}</strong>{' '}
+              of <strong>{result.independent_confirmation.total_count}</strong>{' '}
+              cited sources are independent primary reporting &mdash; the rest
+              cite one of those instead of reporting it firsthand.
+            </p>
+
+            <div className="independence-list">
+              {result.independent_confirmation.relationships.map(
+                (relationship, index) => (
+                  <div
+                    className={`independence-item ${
+                      relationship.is_independent ? 'independent' : 'derivative'
+                    }`}
+                    key={`${relationship.url}-${index}`}
+                  >
+                    <span className="independence-marker">
+                      {relationship.is_independent ? (
+                        <CheckCircle2 size={16} />
+                      ) : (
+                        <GitBranch size={16} />
+                      )}
+                    </span>
+
+                    <div className="independence-item-body">
+                      <a href={relationship.url} target="_blank" rel="noreferrer">
+                        {relationship.source ?? relationship.url}
+                        <ExternalLink size={12} />
+                      </a>
+
+                      {relationship.is_independent ? (
+                        <span className="independence-tag">
+                          Independent reporting
+                        </span>
+                      ) : (
+                        <span className="independence-tag">
+                          Cites{' '}
+                          {citedSourceNames(
+                            relationship,
+                            result.independent_confirmation.relationships,
+                          ) || 'another source above'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ),
+              )}
+            </div>
+          </>
+        )}
       </section>
 
       <section className="claim-tree-card">

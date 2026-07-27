@@ -8,6 +8,78 @@ import {
 import { InvestigationResult } from '../components/InvestigationResult'
 import type { InvestigationResponse } from '../types'
 
+const exampleClaimPool = [
+  {
+    label: 'Health',
+    claim: 'The FDA approved a new mRNA vaccine for RSV in adults over 60',
+  },
+  {
+    label: 'Agriculture',
+    claim: 'The USDA declared a nationwide emergency over bird flu in egg-laying hens',
+  },
+  {
+    label: 'Tech',
+    claim: 'Tesla started autonomous robotaxis in California',
+  },
+  {
+    label: 'Social',
+    claim: 'X was banned in Brazil after Musk defied a court order',
+  },
+  {
+    label: 'Politics',
+    claim: 'The EU approved the AI Act regulating high-risk artificial intelligence systems',
+  },
+  {
+    label: 'Finance',
+    claim: 'The Federal Reserve cut interest rates by 50 basis points in September 2024',
+  },
+  {
+    label: 'Climate',
+    claim: 'NASA confirmed 2024 as the hottest year on record',
+  },
+  {
+    label: 'Sports',
+    claim: 'FIFA awarded Saudi Arabia the right to host the 2034 World Cup',
+  },
+  {
+    label: 'Entertainment',
+    claim: 'Barbie became the highest-grossing film of 2023',
+  },
+  {
+    label: 'Legal',
+    claim: 'The U.S. Supreme Court overturned Roe v. Wade',
+  },
+  {
+    label: 'Education',
+    claim: 'Harvard University eliminated tuition for families earning under $200,000',
+  },
+  {
+    label: 'Science',
+    claim: 'CERN confirmed the discovery of a new fundamental particle',
+  },
+  {
+    label: 'Business',
+    claim: "China's Evergrande Group was ordered to liquidate by a Hong Kong court",
+  },
+  {
+    label: 'Crime & Safety',
+    claim: 'The FBI confirmed a nationwide spike in cybercrime in 2024',
+  },
+  {
+    label: 'Food Safety',
+    claim: 'The CDC linked a salmonella outbreak to cucumbers in 2024',
+  },
+  {
+    label: 'Space',
+    claim: "NASA's Artemis II mission launched astronauts around the Moon",
+  },
+]
+
+function pickRandomExamples<T>(pool: T[], count: number): T[] {
+  const shuffled = [...pool].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, count)
+}
+
 const detectiveStepOrder = [
   'starting',
   'researching',
@@ -45,6 +117,9 @@ const detectiveSteps = [
 ]
 
 export function HomePage() {
+  const [displayedExamples] = useState(() =>
+    pickRandomExamples(exampleClaimPool, 4),
+  )
   const [claim, setClaim] = useState('')
   const [result, setResult] = useState<InvestigationResponse | null>(null)
   const [pendingResult, setPendingResult] =
@@ -189,8 +264,9 @@ export function HomePage() {
         <h1>Investigate what the evidence actually supports.</h1>
 
         <p className="subtitle">
-          Enter a live claim. TruthLens checks current sources, conflicts,
-          official confirmation and how the story evolved.
+          From health and policy claims to tech launches and viral posts,
+          enter any claim and TruthLens checks it against live sources,
+          conflicts, official confirmation and how the story evolved.
         </p>
 
         <form className="claim-form" onSubmit={handleSubmit}>
@@ -207,6 +283,21 @@ export function HomePage() {
             {isLoading ? 'Investigating…' : 'Investigate claim'}
           </button>
         </form>
+
+        <div className="example-chips">
+          {displayedExamples.map((example) => (
+            <button
+              type="button"
+              className="example-chip"
+              key={example.label}
+              disabled={isLoading}
+              onClick={() => setClaim(example.claim)}
+            >
+              <span className="example-chip-label">{example.label}</span>
+              {example.claim}
+            </button>
+          ))}
+        </div>
 
         {error && <div className="error-message">{error}</div>}
       </section>
