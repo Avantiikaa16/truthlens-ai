@@ -6,6 +6,8 @@ TruthLens AI is a full-stack fact investigation platform that goes beyond simple
 
 **Live**: [avantika-truthlens-ai.vercel.app](https://avantika-truthlens-ai.vercel.app)
 
+<img width="2152" height="1592" alt="truthlens-plain-dashboard" src="https://github.com/user-attachments/assets/03db19b1-0fc5-4ee1-bd24-f0b80b385db7" />
+
 ---
 
 ## ✨ Features
