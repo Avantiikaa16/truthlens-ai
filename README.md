@@ -6,20 +6,18 @@ TruthLens AI is a full-stack fact investigation platform that goes beyond simple
 
 **Live**: [avantika-truthlens-ai.vercel.app](https://avantika-truthlens-ai.vercel.app)
 
-Originally built for the **You.com Agentic AI Hackathon 2026**, since extended into a persisted, authenticated, production-deployed application.
-
 ---
 
 ## ✨ Features
 
 - 🔎 Verify factual claims using live web research (You.com Research API)
 - 📊 Explainable confidence scoring with itemized factors
-- 🔗 Independent Confirmation Score — classifies cited sources as independent primary reporting vs. ones just citing another source, and scores how many independent sources actually back the verdict
+- 🔗 Independent Confirmation Score - classifies cited sources as independent primary reporting vs. ones just citing another source, and scores how many independent sources actually back the verdict
 - 🌳 Claim Tree showing supporting, conflicting, and official evidence
 - 📰 Story evolution timeline
 - ⚡ Eight verdict categories (see below) instead of a binary true/false
 - 🎯 Exact-claim verification (subject/action/object/direction/date) to avoid confirming a similar-but-different event
-- 👤 Accounts with JWT auth — investigating stays fully anonymous by default; logging in additionally saves a personal history
+- 👤 Accounts with JWT auth - investigating stays fully anonymous by default; logging in additionally saves a personal history
 - 🔗 Every investigation gets a shareable, permanent link, regardless of login state
 - ⏱ Auto-logout after 30 minutes of inactivity (persisted across refreshes)
 
@@ -60,39 +58,6 @@ Originally built for the **You.com Agentic AI Hackathon 2026**, since extended i
 - Frontend deployed on **Vercel**
 - Backend deployed on **Render**
 - Database on **Neon** (serverless Postgres)
-
----
-
-## 📂 Project Structure
-
-```text
-truthlens-ai/
-│
-├── backend/
-│   ├── alembic/                 # DB migrations
-│   ├── app/
-│   │   ├── db/                  # SQLAlchemy models + async session
-│   │   ├── routers/             # auth, investigations, investigate endpoints
-│   │   ├── auth.py              # JWT issuing/verification
-│   │   ├── confidence.py        # Explainable confidence scoring
-│   │   ├── independence.py      # Independent Confirmation Score
-│   │   ├── models.py            # Pydantic request/response schemas
-│   │   ├── schemas_auth.py
-│   │   ├── you_client.py        # You.com Research API prompt + client
-│   │   └── main.py
-│   └── requirements.txt
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/          # InvestigationResult, Navbar
-│   │   ├── context/              # AuthContext (JWT + idle logout)
-│   │   ├── pages/                # HomePage, LoginPage, SignupPage, HistoryPage, SharePage
-│   │   ├── api.ts
-│   │   └── types.ts
-│   └── package.json
-│
-└── README.md
-```
 
 ---
 
